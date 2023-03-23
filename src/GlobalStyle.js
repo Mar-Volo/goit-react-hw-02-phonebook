@@ -1,4 +1,14 @@
-@import-normalize; /* bring in normalize.css styles */
+import { createGlobalStyle } from 'styled-components';
+import 'modern-normalize';
+
+const GlobalStyle = createGlobalStyle`
+* {
+    margin: 0;
+    padding: 0;
+    
+    list-style: none;
+    text-decoration: none;
+}
 
 body {
   margin: 0;
@@ -9,7 +19,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+h2 {
+    display: block;
+}
+
+button {
+    cursor: pointer;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+`;
+export default GlobalStyle;
