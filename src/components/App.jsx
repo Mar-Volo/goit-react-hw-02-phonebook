@@ -1,67 +1,83 @@
 import { Component } from 'react';
 import shortid from 'shortid';
 
-// import { ContactForm } from './Form/Form';
-// import { Formik } from 'formik';
-import { ContactsList } from '../Contacts/Contacts';
-import { Form, Label, Field, FormSubmit } from './Form/Form.styled';
+import { ContactForm } from './Form/Form';
+import { ContactsList } from './Contacts/Contacts';
 import { Title } from './Layout/Layout.styled';
+import { Filter } from './Filter/Filter';
+
 import GlobalStyle from 'GlobalStyle';
 import { Layout } from './Layout/Layout';
 
 export class App extends Component {
   state = {
-    contacts: [],
-    name: '',
+    contacts: [
+      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+    ],
+    filter: '',
   };
 
   contactId = () => {
     return shortid.generate();
   };
 
-  handleChange = e => {
-    const { name, value } = e.currentTarget;
-    this.setState({ [name]: value });
+  onAddContact = data => {
+    const { contacts } = this.state;
+    const searchContact = contacts
+      .map(contact => contact.name)
+      .includes(data.name);
+    if (searchContact) {
+      alert(`${data.name} is already in contacts`);
+    } else {
+      const contact = {
+        ...data,
+        id: this.contactId(),
+      };
+      this.setState(prevState => ({
+        contacts: [...prevState.contacts, contact],
+      }));
+    }
   };
 
-  handleSubmit = e => {
-    e.preventDefault();
-    const { name } = this.state;
-    this.setState((prevState) => ({
-      contacts: [...prevState.contacts, { id: this.contactId(), name: name }]
-    }))
-    
-    this.formReset();
+  filterHandler = e => {
+    this.setState({ filter: e.currentTarget.value });
   };
 
-  formReset = () => {
-    this.setState({ name: '' });
+  getVisibleContacts = () => {
+    const { contacts, filter } = this.state;
+    const normalizedFilter = filter.toLowerCase();
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(normalizedFilter)
+    );
+  };
+
+  onDelete = contactId => {
+    this.setState(prevState => {
+      return {
+        contacts: prevState.contacts.filter(({ id }) => id !== contactId),
+      };
+    });
   };
 
   render() {
-    const { name, contacts } = this.state;
-    console.log(this.state.contacts)
+    const { filter } = this.state;
+    const visibleContacts = this.getVisibleContacts();
     return (
       <Layout>
         <Title>Phonebook</Title>
-        <Form autoComplete="off" onSubmit={this.handleSubmit}>
-          <Label>
-            Name
-            <Field
-              value={name}
-              placeholder="Enter a name"
-              type="text"
-              name="name"
-              pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-              title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-              required
-              onChange={this.handleChange}
-            />
-          </Label>
-          <FormSubmit type="submit">Add contact</FormSubmit>
-        </Form>
+        <ContactForm addContact={this.onAddContact} />
         <Title>Contacts</Title>
-        <ContactsList contacts={contacts} />
+
+        <Filter value={filter} searchContact={this.filterHandler} />
+
+        <ContactsList
+          filterContacts={visibleContacts}
+          onDeleteContact={this.onDelete}
+        />
+
         <GlobalStyle />
       </Layout>
     );
